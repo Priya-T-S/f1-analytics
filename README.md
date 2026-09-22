@@ -51,7 +51,11 @@ Other backend commands:
    - `TURSO_AUTH_TOKEN`
    - `CRON_SECRET`: any long random string
 
-   Then deploy. `vercel.json` sets up the build, the `/api` function and the daily cron job, which runs at 06:00 UTC.
+   Then deploy. `vercel.json` defines two [Vercel Services](https://vercel.com/docs/services):
+   - `frontend`: the Vite app, with a fallback to `index.html` for client-side routes
+   - `backend`: the Express app in `backend/src/app.js`, which receives every `/api/*` request
+
+   It also sets up the daily cron job, which runs at 06:00 UTC.
 4. **Check it.** Open `https://<your-app>.vercel.app/api/sync/status` to see when the data was last updated. The cron job is listed under **Settings → Cron Jobs** in Vercel.
 
 API responses are cached at Vercel's edge for an hour. This keeps the site fast and well inside Turso's free read quota.

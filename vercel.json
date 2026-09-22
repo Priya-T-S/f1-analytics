@@ -1,15 +1,35 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm --prefix frontend install && npm --prefix frontend run build",
-  "outputDirectory": "frontend/dist",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/index.js": { "maxDuration": 60 }
-  },
-  "crons": [
-    { "path": "/api/cron/sync", "schedule": "0 6 * * *" }
-  ]
+    "services": {
+        "frontend": {
+            "root": "frontend",
+            "framework": "vite",
+            "rewrites": [
+                { "source": "/(.*)", "destination": "/index.html" }
+            ]
+        },
+        "backend": {
+            "root": "backend",
+            "framework": "express",
+            "entrypoint": "src/app.js"
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api(/.*)?",
+            "destination": {
+                "type": "service",
+                "service": "backend"
+            }
+        },
+        {
+            "source": "/(.*)",
+            "destination": {
+                "type": "service",
+                "service": "frontend"
+            }
+        }
+    ],
+    "crons": [
+        { "path": "/api/cron/sync", "schedule": "0 6 * * *" }
+    ]
 }
