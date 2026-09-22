@@ -60,6 +60,7 @@ async function backfill({ dir } = {}) {
   })));
   await store.upsertConstructors([...teams.values()].map((t) => ({
     ref: t.reference, name: t.name, nationality: t.nationality, color: t.primary_color || null,
+    wikiUrl: t.wikipedia || null,
   })));
 
   const seasonIds = await store.seasonIds();
@@ -204,9 +205,9 @@ async function backfill({ dir } = {}) {
   await store.refreshSeasons();
   await store.refreshLapRecords();
 
-  console.log('Fetching driver photos from Wikipedia...');
-  const { fillDriverImages } = require('./images');
-  console.log('  ', await fillDriverImages());
+  console.log('Fetching driver photos and team logos from Wikipedia...');
+  const { fillAllImages } = require('./images');
+  console.log('  ', await fillAllImages());
 
   await store.setState('last_sync', { at: new Date().toISOString(), source: 'jolpica-dump' });
 

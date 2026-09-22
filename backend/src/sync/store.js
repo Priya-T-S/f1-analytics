@@ -83,11 +83,12 @@ async function upsertDrivers(drivers) {
 }
 
 async function upsertConstructors(constructors) {
-  const rows = constructors.map((c) => [c.ref, c.name, c.nationality, c.color || '#ffffff']);
+  const rows = constructors.map((c) => [c.ref, c.name, c.nationality, c.color || '#ffffff', c.wikiUrl || null]);
   await runStatements(insertStatements('INSERT', 'constructors',
-    ['constructor_ref', 'name', 'nationality', 'color'], rows,
+    ['constructor_ref', 'name', 'nationality', 'color', 'wiki_url'], rows,
     `ON CONFLICT(constructor_ref) DO UPDATE SET name = excluded.name, nationality = excluded.nationality,
-       color = CASE WHEN excluded.color = '#ffffff' THEN constructors.color ELSE excluded.color END`));
+       color = CASE WHEN excluded.color = '#ffffff' THEN constructors.color ELSE excluded.color END,
+       wiki_url = COALESCE(excluded.wiki_url, constructors.wiki_url)`));
 }
 
 async function upsertRaces(races) {

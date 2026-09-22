@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS constructors (
   nationality      TEXT,
   base_location    TEXT,
   logo_url         TEXT,
-  color            TEXT DEFAULT '#ffffff'
+  color            TEXT DEFAULT '#ffffff',
+  wiki_url         TEXT
 );
 
 CREATE TABLE IF NOT EXISTS drivers (

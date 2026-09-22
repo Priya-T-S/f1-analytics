@@ -25,6 +25,7 @@ async function dropLegacySchema() {
 // Columns added after the first release; CREATE TABLE IF NOT EXISTS won't add them to existing tables.
 const ADDED_COLUMNS = [
   ['drivers', 'wiki_url', 'TEXT'],
+  ['constructors', 'wiki_url', 'TEXT'],
 ];
 
 async function addMissingColumns() {

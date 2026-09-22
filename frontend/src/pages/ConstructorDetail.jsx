@@ -5,6 +5,7 @@ import { TEAM_COLORS } from '../utils/constants';
 import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';
 import Loader from '../components/common/Loader';
+import ConstructorLogo from '../components/common/ConstructorLogo';
 
 export default function ConstructorDetail() {
   const { id } = useParams();
@@ -35,23 +36,10 @@ export default function ConstructorDetail() {
     <div>
       <div className="page-header">
         <div className="flex items-center gap-4">
-          {c.logo_url ? (
-            <div className="detail-avatar">
-              <img src={c.logo_url} alt={c.name} className="detail-logo" />
-            </div>
-          ) : (
-            <div style={{
-              width: 64, height: 64, borderRadius: '50%',
-              background: c.color || '#333',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.5rem', fontWeight: 900, color: '#fff',
-            }}>
-              {c.name.charAt(0)}
-            </div>
-          )}
+          <ConstructorLogo constructor={c} size="detail" />
           <div>
             <h1>{c.name}</h1>
-            <p>{c.nationality} • {c.base_location}</p>
+            <p>{[c.nationality, c.base_location].filter(Boolean).join(' • ')}</p>
           </div>
         </div>
       </div>
