@@ -24,6 +24,11 @@ export const getCircuitWinners = (id) => api.get(`/circuits/${id}/winners`);
 export const getRacesBySeason = (year) => api.get(`/races/season/${year}`);
 export const getRace = (id) => api.get(`/races/${id}`);
 export const getRaceResults = (id) => api.get(`/races/${id}/results`);
+export const getRaceTyres = (id) => api.get(`/races/${id}/tyres`);
+export const getRaceSectors = (id) => api.get(`/races/${id}/sectors`);
+
+export const getSeasons = () => api.get('/seasons');
+export const getSyncStatus = () => api.get('/sync/status');
 
 export const getDriverStandingsBySeason = (year) =>
   api.get(`/standings/drivers/${year}`);

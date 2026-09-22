@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDriver, getDriverStandings, getDriverRaces } from '../api/client';
 import { getConstructorStandingsBySeason } from '../api/client';
-import { SEASONS, TEAM_COLORS } from '../utils/constants';
 import { positionClass } from '../utils/helpers';
 import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';

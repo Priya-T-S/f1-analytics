@@ -8,12 +8,13 @@ export default function Drivers() {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [scope, setScope] = useState('current');
 
   useEffect(() => {
-    getDrivers({ nationality: filter || undefined })
+    getDrivers({ nationality: filter || undefined, current: scope === 'current' ? 1 : undefined })
       .then(res => setDrivers(res.data))
       .finally(() => setLoading(false));
-  }, [filter]);
+  }, [filter, scope]);
 
   if (loading) return <Loader />;
 
@@ -25,6 +26,10 @@ export default function Drivers() {
           <p>{drivers.length} drivers</p>
         </div>
         <div className="flex gap-2 items-center">
+          <select value={scope} onChange={e => { setScope(e.target.value); setFilter(''); }}>
+            <option value="current">Current grid</option>
+            <option value="all">All-time (1950–today)</option>
+          </select>
           <span className="text-sm text-muted">Nationality:</span>
           <select value={filter} onChange={e => setFilter(e.target.value)}>
             <option value="">All</option>

@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRacesBySeason } from '../api/client';
-import { SEASONS } from '../utils/constants';
+import useSeasons from '../hooks/useSeasons';
 import { ordinal } from '../utils/helpers';
 import Loader from '../components/common/Loader';
 
 export default function Races() {
-  const { year } = useParams();
+  const params = useParams();
   const navigate = useNavigate();
+  const { seasons, latest } = useSeasons();
+  const year = params.year ?? latest;
   const [races, setRaces] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!year) return;
     setLoading(true);
     getRacesBySeason(year)
       .then(res => setRaces(res.data))
@@ -28,7 +31,7 @@ export default function Races() {
           <p>{races.length} races</p>
         </div>
         <select value={year} onChange={e => navigate(`/races/${e.target.value}`)}>
-          {SEASONS.map(y => <option key={y} value={y}>{y}</option>)}
+          {seasons.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
@@ -58,7 +61,7 @@ export default function Races() {
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-muted">{race.scheduled_laps} laps</span>
+                {race.scheduled_laps && <span className="text-muted">{race.scheduled_laps} laps</span>}
                 {race.winner_name && (
                   <span style={{ fontWeight: 600 }}>
                     Winner: {race.winner_name}

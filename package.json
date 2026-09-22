@@ -1,0 +1,14 @@
+{
+  "name": "f1-analytics",
+  "private": true,
+  "description": "Root package for Vercel: the API function's runtime dependencies. Local development uses backend/ and frontend/.",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}

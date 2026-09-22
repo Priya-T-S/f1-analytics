@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { getDriverStandingsBySeason, getConstructorStandingsBySeason } from '../api/client';
-import { SEASONS } from '../utils/constants';
+import useSeasons from '../hooks/useSeasons';
 import DataTable from '../components/common/DataTable';
 import Loader from '../components/common/Loader';
 
 export default function Standings() {
-  const [year, setYear] = useState(SEASONS[0]);
+  const { seasons, latest } = useSeasons();
+  const [selectedYear, setYear] = useState(null);
+  const year = selectedYear ?? latest;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!year) return;
     setLoading(true);
     Promise.all([
       getDriverStandingsBySeason(year),
@@ -59,7 +62,7 @@ export default function Standings() {
           <p>{year} Season</p>
         </div>
         <select value={year} onChange={e => setYear(Number(e.target.value))}>
-          {SEASONS.map(y => <option key={y} value={y}>{y}</option>)}
+          {seasons.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 

@@ -1,5 +1,10 @@
 const { query } = require('../models/query');
 
+// The newest season with standings (a new season has none until its first race).
+const LATEST_STANDINGS_YEAR = `
+  SELECT MAX(s2.year) FROM seasons s2
+  WHERE EXISTS (SELECT 1 FROM driver_standings x WHERE x.season_id = s2.season_id)`;
+
 const getDriverStandingsBySeason = async (req, res, next) => {
   try {
     const { round } = req.query;
@@ -65,10 +70,10 @@ const getCurrentStandings = async (req, res, next) => {
          FROM race_results rr
          JOIN constructors co ON rr.constructor_id = co.constructor_id
          JOIN races r ON rr.race_id = r.race_id
-         WHERE r.season_id = (SELECT season_id FROM seasons WHERE year = (SELECT MAX(year) FROM seasons))
+         WHERE r.season_id = (SELECT season_id FROM seasons WHERE year = (${LATEST_STANDINGS_YEAR}))
          GROUP BY rr.driver_id
        ) c ON d.driver_id = c.driver_id
-       WHERE s.year = (SELECT MAX(year) FROM seasons)
+       WHERE s.year = (${LATEST_STANDINGS_YEAR})
          AND ds.round = (SELECT MAX(round) FROM driver_standings sub WHERE sub.season_id = ds.season_id)
        GROUP BY d.driver_id, ds.position, ds.points, ds.wins, c.name, c.color
        ORDER BY ds.position`
@@ -79,11 +84,15 @@ const getCurrentStandings = async (req, res, next) => {
        FROM constructor_standings cs
        JOIN constructors c ON cs.constructor_id = c.constructor_id
        JOIN seasons s ON cs.season_id = s.season_id
-       WHERE s.year = (SELECT MAX(year) FROM seasons)
+       WHERE s.year = (${LATEST_STANDINGS_YEAR})
          AND cs.round = (SELECT MAX(round) FROM constructor_standings sub WHERE sub.season_id = cs.season_id)
        ORDER BY cs.position`
     );
-    res.json({ drivers, constructors });
+    const [{ year, round } = {}] = await query(
+      `SELECT s.year, MAX(ds.round) AS round FROM driver_standings ds JOIN seasons s ON s.season_id = ds.season_id
+       WHERE s.year = (${LATEST_STANDINGS_YEAR})`
+    );
+    res.json({ year, round, drivers, constructors });
   } catch (err) { next(err); }
 };
 

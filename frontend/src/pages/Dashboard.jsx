@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentStandings, getSeasonSummary, getRecords } from '../api/client';
-import { SEASONS } from '../utils/constants';
+import { getCurrentStandings, getSeasonSummary, getRecords, getSyncStatus } from '../api/client';
+import useSeasons from '../hooks/useSeasons';
 import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';
 import PointsChart from '../components/common/PointsChart';
@@ -9,24 +9,31 @@ import Loader from '../components/common/Loader';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [year, setYear] = useState(SEASONS[0]);
+  const { seasons, latest } = useSeasons();
+  const [selectedYear, setYear] = useState(null);
+  const year = selectedYear ?? latest;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!year) return;
     setLoading(true);
     Promise.all([
       getCurrentStandings(),
       getSeasonSummary(year),
       getRecords(),
-    ]).then(([standings, summary, records]) => {
-      setData({ standings: standings.data, summary: summary.data, records: records.data });
+      getSyncStatus(),
+    ]).then(([standings, summary, records, sync]) => {
+      setData({ standings: standings.data, summary: summary.data, records: records.data, sync: sync.data });
     }).finally(() => setLoading(false));
   }, [year]);
 
   if (loading) return <Loader />;
 
-  const { standings, summary, records } = data || {};
+  const { standings, summary, records, sync } = data || {};
+  const lastUpdated = sync?.lastSync?.at
+    ? new Date(sync.lastSync.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : null;
   const drivers = standings?.drivers || [];
   const constructors = standings?.constructors || [];
 
@@ -66,10 +73,14 @@ export default function Dashboard() {
       <div className="page-header flex items-center justify-between">
         <div>
           <h1>F1 Analytics</h1>
-          <p>Real-time statistics and historical analysis</p>
+          <p>
+            Statistics and historical analysis, 1950 to today
+            {lastUpdated && <span className="text-muted"> • Data updated {lastUpdated}</span>}
+            {sync?.lastRace && <span className="text-muted"> • Latest race: {sync.lastRace.year} {sync.lastRace.name}</span>}
+          </p>
         </div>
         <select value={year} onChange={e => setYear(Number(e.target.value))}>
-          {SEASONS.map(y => <option key={y} value={y}>{y} Season</option>)}
+          {seasons.map(y => <option key={y} value={y}>{y} Season</option>)}
         </select>
       </div>
 
@@ -89,7 +100,7 @@ export default function Dashboard() {
         <StatCard
           label="Most Wins"
           value={summary?.mostWins?.driver_name || '—'}
-          sub={summary?.mostWins?.wins + ' wins' || ''}
+          sub={summary?.mostWins ? `${summary.mostWins.wins} wins` : ''}
           accent="green"
         />
         <StatCard
@@ -103,14 +114,14 @@ export default function Dashboard() {
       <div className="grid grid-2 mb-6">
         <div className="card">
           <div className="card-header">
-            <h3>Driver Standings</h3>
+            <h3>{standings?.year} Driver Standings{standings?.round ? ` · after round ${standings.round}` : ''}</h3>
             <button className="btn btn-outline" onClick={() => navigate('/standings')}>View All</button>
           </div>
           <DataTable columns={driverColumns} data={drivers.slice(0, 10)} onRowClick={(r) => navigate(`/drivers/${r.driver_id}`)} />
         </div>
         <div className="card">
           <div className="card-header">
-            <h3>Constructor Standings</h3>
+            <h3>{standings?.year} Constructor Standings</h3>
             <button className="btn btn-outline" onClick={() => navigate('/standings')}>View All</button>
           </div>
           <DataTable columns={constructorColumns} data={constructors} onRowClick={(r) => navigate(`/constructors/${r.constructor_id}`)} />

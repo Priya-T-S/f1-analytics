@@ -31,7 +31,8 @@ const getConstructorStandings = async (req, res, next) => {
     let sql = `SELECT s.year, cs.position, cs.points, cs.wins
                FROM constructor_standings cs
                JOIN seasons s ON cs.season_id = s.season_id
-               WHERE cs.constructor_id = ?`;
+               WHERE cs.constructor_id = ?
+                 AND cs.round = (SELECT MAX(round) FROM constructor_standings sub WHERE sub.season_id = cs.season_id)`;
     const params = [req.params.id];
     if (year) {
       sql += ` AND s.year = ?`;

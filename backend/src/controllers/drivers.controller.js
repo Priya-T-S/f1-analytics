@@ -1,22 +1,35 @@
 const { query } = require('../models/query');
 
+// Each driver's team in their most recent race.
+const LATEST_TEAM = `
+  SELECT driver_id, name, color, last_year FROM (
+    SELECT rr.driver_id, co.name, co.color, s.year AS last_year,
+           ROW_NUMBER() OVER (PARTITION BY rr.driver_id ORDER BY r.race_date DESC) AS rn
+    FROM race_results rr
+    JOIN races r ON rr.race_id = r.race_id
+    JOIN seasons s ON r.season_id = s.season_id
+    JOIN constructors co ON rr.constructor_id = co.constructor_id
+  ) WHERE rn = 1`;
+
+// The newest season that has at least one race result.
+const LATEST_SEASON_YEAR = `
+  SELECT MAX(s.year) FROM seasons s JOIN races r ON r.season_id = s.season_id
+  WHERE EXISTS (SELECT 1 FROM race_results rr WHERE rr.race_id = r.race_id)`;
+
 const getAllDrivers = async (req, res, next) => {
   try {
-    const { nationality } = req.query;
-    let sql = `SELECT d.*, c.name AS constructor, c.color AS constructor_color
+    const { nationality, current } = req.query;
+    let sql = `SELECT d.*, c.name AS constructor, c.color AS constructor_color, c.last_year
                FROM drivers d
-               LEFT JOIN (
-                 SELECT rr.driver_id, co.name, co.color
-                 FROM race_results rr
-                 JOIN constructors co ON rr.constructor_id = co.constructor_id
-                 JOIN races r ON rr.race_id = r.race_id
-                 WHERE r.season_id = (SELECT MAX(season_id) FROM seasons)
-                 GROUP BY rr.driver_id
-               ) c ON d.driver_id = c.driver_id`;
+               LEFT JOIN (${LATEST_TEAM}) c ON d.driver_id = c.driver_id
+               WHERE 1 = 1`;
     const params = [];
     if (nationality) {
-      sql += ` WHERE d.nationality = ?`;
+      sql += ` AND d.nationality = ?`;
       params.push(nationality);
+    }
+    if (current) {
+      sql += ` AND c.last_year = (${LATEST_SEASON_YEAR})`;
     }
     sql += ` ORDER BY d.last_name ASC`;
     const rows = await query(sql, params);
@@ -29,14 +42,7 @@ const getDriverById = async (req, res, next) => {
     const rows = await query(
       `SELECT d.*, c.name AS constructor, c.color AS constructor_color
        FROM drivers d
-       LEFT JOIN (
-         SELECT rr.driver_id, co.name, co.color
-         FROM race_results rr
-         JOIN constructors co ON rr.constructor_id = co.constructor_id
-         JOIN races r ON rr.race_id = r.race_id
-         WHERE r.season_id = (SELECT MAX(season_id) FROM seasons)
-         GROUP BY rr.driver_id
-       ) c ON d.driver_id = c.driver_id
+       LEFT JOIN (${LATEST_TEAM}) c ON d.driver_id = c.driver_id
        WHERE d.driver_id = ?`,
       [req.params.id]
     );
@@ -52,6 +58,7 @@ const getDriverStandings = async (req, res, next) => {
        FROM driver_standings ds
        JOIN seasons s ON ds.season_id = s.season_id
        WHERE ds.driver_id = ?
+         AND ds.round = (SELECT MAX(round) FROM driver_standings sub WHERE sub.season_id = ds.season_id)
        ORDER BY s.year DESC`,
       [req.params.id]
     );
@@ -83,7 +90,7 @@ const getHeadToHead = async (req, res, next) => {
   try {
     const { d1, d2 } = req.params;
     const { year } = req.query;
-    let sql = `SELECT r.name AS race_name, r.round_number, r.race_date,
+    let sql = `SELECT r.race_id, r.name AS race_name, r.round_number, r.race_date,
                       MAX(CASE WHEN d.driver_id = ? THEN rr.position END) AS driver1_pos,
                       MAX(CASE WHEN d.driver_id = ? THEN rr.position END) AS driver2_pos
                FROM races r

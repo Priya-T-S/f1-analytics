@@ -7,5 +7,6 @@ router.use('/circuits', require('./circuits.routes'));
 router.use('/races', require('./races.routes'));
 router.use('/standings', require('./standings.routes'));
 router.use('/stats', require('./stats.routes'));
+router.use('/', require('./meta.routes'));
 
 module.exports = router;

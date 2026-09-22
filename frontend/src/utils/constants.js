@@ -1,5 +1,3 @@
-export const SEASONS = [2023, 2022];
-
 export const POSITION_COLORS = {
   1: '#ffd700',
   2: '#c0c0c0',
@@ -31,7 +29,7 @@ export const NAV_ITEMS = [
   { label: 'Drivers', path: '/drivers' },
   { label: 'Constructors', path: '/constructors' },
   { label: 'Circuits', path: '/circuits' },
-  { label: 'Races', path: '/races/2023' },
+  { label: 'Races', path: '/races' },
   { label: 'Standings', path: '/standings' },
   { label: 'Head-to-Head', path: '/compare' },
   { label: 'Records', path: '/records' },

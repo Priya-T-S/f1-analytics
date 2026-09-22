@@ -35,7 +35,7 @@ export default function CircuitDetail() {
         <div className="card">
           <div className="stat-label text-sm">Length</div>
           <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 900 }}>
-            {circuit.length_km} km
+            {circuit.length_km ? `${circuit.length_km} km` : '—'}
           </div>
         </div>
         <div className="card">

@@ -35,7 +35,7 @@ export default function Circuits() {
               {c.location}, {c.country}
             </div>
             <div className="flex gap-4 mt-4 text-sm">
-              <span><strong>{c.length_km}</strong> km</span>
+              {c.length_km && <span><strong>{c.length_km}</strong> km</span>}
               <span className="text-muted">Record: {c.lap_record_time || '—'}</span>
             </div>
           </div>

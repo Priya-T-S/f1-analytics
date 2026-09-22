@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getDrivers, getHeadToHead, getDriverComparison } from '../api/client';
-import { SEASONS } from '../utils/constants';
+import useSeasons from '../hooks/useSeasons';
 import { positionClass } from '../utils/helpers';
 import Loader from '../components/common/Loader';
 
@@ -8,7 +8,9 @@ export default function Compare() {
   const [drivers, setDrivers] = useState([]);
   const [d1, setD1] = useState('');
   const [d2, setD2] = useState('');
-  const [year, setYear] = useState(SEASONS[0]);
+  const { seasons, latest } = useSeasons();
+  const [selectedYear, setYear] = useState(null);
+  const year = selectedYear ?? latest;
   const [comparison, setComparison] = useState(null);
   const [headToHead, setHeadToHead] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,7 +20,7 @@ export default function Compare() {
   }, []);
 
   useEffect(() => {
-    if (!d1 || !d2) { setComparison(null); setHeadToHead(null); return; }
+    if (!d1 || !d2 || !year) { setComparison(null); setHeadToHead(null); return; }
     setLoading(true);
     Promise.all([
       getDriverComparison(d1, d2),
@@ -32,10 +34,12 @@ export default function Compare() {
   const d1Wins = headToHead?.filter(r => r.driver1_pos !== null && r.driver2_pos !== null && r.driver1_pos < r.driver2_pos).length || 0;
   const d2Wins = headToHead?.filter(r => r.driver1_pos !== null && r.driver2_pos !== null && r.driver2_pos < r.driver1_pos).length || 0;
 
-  const driverOptions = drivers.map(d => ({
-    value: d.driver_id,
-    label: `${d.first_name} ${d.last_name} (${d.code})`
-  }));
+  const driverOptions = [...drivers]
+    .sort((a, b) => a.last_name.localeCompare(b.last_name))
+    .map(d => ({
+      value: d.driver_id,
+      label: `${d.last_name}, ${d.first_name}${d.code ? ` (${d.code})` : ''}`
+    }));
 
   return (
     <div>
@@ -68,7 +72,7 @@ export default function Compare() {
           <div className="flex-col gap-2" style={{ minWidth: 150 }}>
             <label className="text-sm text-muted">Season</label>
             <select value={year} onChange={e => setYear(Number(e.target.value))} style={{ width: '100%' }}>
-              {SEASONS.map(y => <option key={y} value={y}>{y}</option>)}
+              {seasons.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
         </div>

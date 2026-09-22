@@ -24,6 +24,7 @@ export default function App() {
         <Route path="/constructors/:id" element={<ConstructorDetail />} />
         <Route path="/circuits" element={<Circuits />} />
         <Route path="/circuits/:id" element={<CircuitDetail />} />
+        <Route path="/races" element={<Races />} />
         <Route path="/races/:year" element={<Races />} />
         <Route path="/race/:id" element={<RaceDetail />} />
         <Route path="/standings" element={<Standings />} />
