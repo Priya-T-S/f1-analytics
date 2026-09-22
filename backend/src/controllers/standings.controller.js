@@ -96,6 +96,34 @@ const getCurrentStandings = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// Cumulative points after every round for the season's top drivers (by final/latest standing).
+const getPointsProgression = async (req, res, next) => {
+  try {
+    const top = Math.min(parseInt(req.query.top, 10) || 6, 20);
+    const rows = await query(
+      `WITH top_drivers AS (
+         SELECT ds.driver_id, ds.position
+         FROM driver_standings ds JOIN seasons s ON ds.season_id = s.season_id
+         WHERE s.year = ?
+           AND ds.round = (SELECT MAX(round) FROM driver_standings sub WHERE sub.season_id = ds.season_id)
+         ORDER BY ds.position IS NULL, ds.position
+         LIMIT ?
+       )
+       SELECT ds.round, ds.driver_id, ds.points, t.position AS final_position,
+              COALESCE(d.code, UPPER(SUBSTR(d.last_name, 1, 3))) AS code,
+              d.first_name || ' ' || d.last_name AS driver_name
+       FROM driver_standings ds
+       JOIN seasons s ON ds.season_id = s.season_id
+       JOIN top_drivers t ON t.driver_id = ds.driver_id
+       JOIN drivers d ON d.driver_id = ds.driver_id
+       WHERE s.year = ?
+       ORDER BY ds.round, t.position`,
+      [req.params.year, top, req.params.year]
+    );
+    res.json(rows);
+  } catch (err) { next(err); }
+};
+
 module.exports = {
-  getDriverStandingsBySeason, getConstructorStandingsBySeason, getCurrentStandings
+  getDriverStandingsBySeason, getConstructorStandingsBySeason, getCurrentStandings, getPointsProgression
 };

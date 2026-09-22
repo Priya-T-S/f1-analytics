@@ -23,12 +23,22 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function PointsChart({ data, drivers }) {
+export default function PointsChart({ data, drivers, title = 'Points Progression' }) {
   if (!data || data.length === 0) return null;
-  const colors = ['#e10600', '#1e41b8', '#00d2be', '#dc0000', '#ff8700', '#006f62'];
+  const colors = ['#e10600', '#3b82f6', '#00d2be', '#ff8700', '#facc15', '#a855f7'];
   return (
     <div className="card">
-      <div className="card-header"><h3>Points Progression</h3></div>
+      <div className="card-header">
+        <h3>{title}</h3>
+        <div className="flex gap-4 text-sm">
+          {drivers?.map((d, i) => (
+            <span key={d.code} className="flex items-center gap-2" title={d.name}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: colors[i % colors.length], display: 'inline-block' }} />
+              {d.code}
+            </span>
+          ))}
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={350}>
         <AreaChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
           <defs>

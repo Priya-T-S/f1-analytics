@@ -3,8 +3,11 @@ const router = Router();
 const {
   getDriverStandingsBySeason,
   getConstructorStandingsBySeason,
-  getCurrentStandings
+  getCurrentStandings,
+  getPointsProgression
 } = require('../controllers/standings.controller');
+
+router.get('/progression/:year', getPointsProgression);
 
 router.get('/drivers/:year', getDriverStandingsBySeason);
 router.get('/constructors/:year', getConstructorStandingsBySeason);

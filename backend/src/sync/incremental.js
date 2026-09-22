@@ -3,12 +3,13 @@
 const jolpica = require('./jolpica');
 const store = require('./store');
 const { enrichMissing } = require('./openf1');
+const { fillDriverImages } = require('./images');
 const { query } = require('../models/query');
 const { toMs, int, num, today } = require('./util');
 
 const driverFromApi = (d) => ({
   ref: d.driverId, firstName: d.givenName, lastName: d.familyName, nationality: d.nationality,
-  dob: d.dateOfBirth || null, number: int(d.permanentNumber), code: d.code || null,
+  dob: d.dateOfBirth || null, number: int(d.permanentNumber), code: d.code || null, wikiUrl: d.url || null,
 });
 const constructorFromApi = (c) => ({ ref: c.constructorId, name: c.name, nationality: c.nationality });
 const circuitFromApi = (c) => ({
@@ -128,6 +129,15 @@ async function runIncremental({ maxRaces = 2, timeBudgetMs = 50000 } = {}) {
   }
 
   const openf1 = await enrichMissing({ max: 2, deadline });
+
+  // Photos for drivers new this week (their Wikipedia links come with the race results).
+  if (synced.length && Date.now() < deadline) {
+    try {
+      await fillDriverImages({ fetchWikiUrls: false });
+    } catch (err) {
+      console.warn(`  Driver photos failed: ${err.message}`);
+    }
+  }
 
   const summary = {
     at: new Date().toISOString(),

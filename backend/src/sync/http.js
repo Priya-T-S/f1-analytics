@@ -25,7 +25,7 @@ function createLimiter({ perSecond, perMinute }) {
   };
 }
 
-function createClient({ baseUrl, perSecond, perMinute, retries = 4 }) {
+function createClient({ baseUrl, perSecond, perMinute, retries = 4, headers = {} }) {
   const limit = createLimiter({ perSecond, perMinute });
 
   return async function getJson(pathAndQuery) {
@@ -34,7 +34,7 @@ function createClient({ baseUrl, perSecond, perMinute, retries = 4 }) {
       await limit();
       let res;
       try {
-        res = await fetch(url, { headers: { Accept: 'application/json' } });
+        res = await fetch(url, { headers: { Accept: 'application/json', ...headers } });
       } catch (err) {
         if (attempt >= retries) throw err;
         await sleep(1000 * 2 ** attempt);

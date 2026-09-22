@@ -7,6 +7,7 @@ import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';
 import PointsChart from '../components/common/PointsChart';
 import Loader from '../components/common/Loader';
+import DriverPhoto from '../components/common/DriverPhoto';
 
 export default function DriverDetail() {
   const { id } = useParams();
@@ -54,11 +55,7 @@ export default function DriverDetail() {
       <div className="page-header">
         <div className="flex items-center gap-4">
           <div className="detail-avatar">
-            {driver.image_url ? (
-              <img src={driver.image_url} alt={`${driver.first_name} ${driver.last_name}`} className="detail-photo" />
-            ) : (
-              <div className="detail-photo-placeholder">{driver.code}</div>
-            )}
+            <DriverPhoto driver={driver} variant="detail" />
           </div>
           <div>
             <h1>{driver.first_name} {driver.last_name}</h1>

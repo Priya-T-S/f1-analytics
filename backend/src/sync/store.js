@@ -72,13 +72,14 @@ async function upsertCircuits(circuits) {
 }
 
 async function upsertDrivers(drivers) {
-  const rows = drivers.map((d) => [d.ref, d.firstName, d.lastName, d.nationality, d.dob, d.number, d.code]);
+  const rows = drivers.map((d) => [d.ref, d.firstName, d.lastName, d.nationality, d.dob, d.number, d.code, d.wikiUrl || null]);
   await runStatements(insertStatements('INSERT', 'drivers',
-    ['driver_ref', 'first_name', 'last_name', 'nationality', 'date_of_birth', 'driver_number', 'code'], rows,
+    ['driver_ref', 'first_name', 'last_name', 'nationality', 'date_of_birth', 'driver_number', 'code', 'wiki_url'], rows,
     `ON CONFLICT(driver_ref) DO UPDATE SET first_name = excluded.first_name, last_name = excluded.last_name,
        nationality = excluded.nationality, date_of_birth = excluded.date_of_birth,
        driver_number = COALESCE(excluded.driver_number, drivers.driver_number),
-       code = COALESCE(excluded.code, drivers.code)`));
+       code = COALESCE(excluded.code, drivers.code),
+       wiki_url = COALESCE(excluded.wiki_url, drivers.wiki_url)`));
 }
 
 async function upsertConstructors(constructors) {

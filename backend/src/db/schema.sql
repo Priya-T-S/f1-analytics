@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS drivers (
   date_of_birth TEXT,
   driver_number INTEGER,
   code          TEXT,
-  image_url     TEXT
+  image_url     TEXT,
+  wiki_url      TEXT
 );
 
 CREATE TABLE IF NOT EXISTS circuits (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDrivers, getHeadToHead, getDriverComparison } from '../api/client';
 import useSeasons from '../hooks/useSeasons';
+import DriverSearch from '../components/common/DriverSearch';
 import { positionClass } from '../utils/helpers';
 import Loader from '../components/common/Loader';
 
@@ -34,13 +35,6 @@ export default function Compare() {
   const d1Wins = headToHead?.filter(r => r.driver1_pos !== null && r.driver2_pos !== null && r.driver1_pos < r.driver2_pos).length || 0;
   const d2Wins = headToHead?.filter(r => r.driver1_pos !== null && r.driver2_pos !== null && r.driver2_pos < r.driver1_pos).length || 0;
 
-  const driverOptions = [...drivers]
-    .sort((a, b) => a.last_name.localeCompare(b.last_name))
-    .map(d => ({
-      value: d.driver_id,
-      label: `${d.last_name}, ${d.first_name}${d.code ? ` (${d.code})` : ''}`
-    }));
-
   return (
     <div>
       <div className="page-header">
@@ -52,26 +46,16 @@ export default function Compare() {
         <div className="flex gap-6 items-center" style={{ flexWrap: 'wrap' }}>
           <div className="flex-col gap-2" style={{ flex: 1, minWidth: 200 }}>
             <label className="text-sm text-muted">Driver 1</label>
-            <select value={d1} onChange={e => setD1(e.target.value)} style={{ width: '100%' }}>
-              <option value="">Select driver</option>
-              {driverOptions.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <DriverSearch drivers={drivers} value={d1} onChange={setD1} label="Driver 1" />
           </div>
           <div style={{ fontSize: '1.5rem', color: 'var(--text-muted)', alignSelf: 'center', marginTop: 16 }}>VS</div>
           <div className="flex-col gap-2" style={{ flex: 1, minWidth: 200 }}>
             <label className="text-sm text-muted">Driver 2</label>
-            <select value={d2} onChange={e => setD2(e.target.value)} style={{ width: '100%' }}>
-              <option value="">Select driver</option>
-              {driverOptions.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <DriverSearch drivers={drivers} value={d2} onChange={setD2} label="Driver 2" />
           </div>
           <div className="flex-col gap-2" style={{ minWidth: 150 }}>
             <label className="text-sm text-muted">Season</label>
-            <select value={year} onChange={e => setYear(Number(e.target.value))} style={{ width: '100%' }}>
+            <select value={year ?? ''} onChange={e => setYear(Number(e.target.value))} style={{ width: '100%' }}>
               {seasons.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>

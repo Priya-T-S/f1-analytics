@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentStandings, getSeasonSummary, getRecords, getSyncStatus } from '../api/client';
+import { getCurrentStandings, getSeasonSummary, getRecords, getSyncStatus, getPointsProgression } from '../api/client';
 import useSeasons from '../hooks/useSeasons';
 import StatCard from '../components/common/StatCard';
 import DataTable from '../components/common/DataTable';
@@ -23,24 +23,39 @@ export default function Dashboard() {
       getSeasonSummary(year),
       getRecords(),
       getSyncStatus(),
-    ]).then(([standings, summary, records, sync]) => {
-      setData({ standings: standings.data, summary: summary.data, records: records.data, sync: sync.data });
+      getPointsProgression(year),
+    ]).then(([standings, summary, records, sync, progression]) => {
+      setData({
+        standings: standings.data, summary: summary.data, records: records.data,
+        sync: sync.data, progression: progression.data,
+      });
     }).finally(() => setLoading(false));
   }, [year]);
 
   if (loading) return <Loader />;
 
-  const { standings, summary, records, sync } = data || {};
+  const { standings, summary, records, sync, progression } = data || {};
   const lastUpdated = sync?.lastSync?.at
     ? new Date(sync.lastSync.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : null;
   const drivers = standings?.drivers || [];
   const constructors = standings?.constructors || [];
 
-  const pointsChartData = drivers.map((d, i) => ({
-    round: i + 1,
-    [d.code]: d.points
-  }));
+  // One row per round, one key per driver: [{ round: 1, VER: 25, NOR: 18 }, ...]
+  const chartDrivers = [];
+  const keyByDriver = new Map();
+  const rowsByRound = new Map();
+  for (const p of progression || []) {
+    if (!keyByDriver.has(p.driver_id)) {
+      const taken = chartDrivers.some(d => d.code === p.code);
+      const key = taken ? `${p.code}-${p.driver_id}` : p.code;
+      keyByDriver.set(p.driver_id, key);
+      chartDrivers.push({ code: key, name: p.driver_name });
+    }
+    if (!rowsByRound.has(p.round)) rowsByRound.set(p.round, { round: p.round });
+    rowsByRound.get(p.round)[keyByDriver.get(p.driver_id)] = p.points;
+  }
+  const pointsChartData = [...rowsByRound.values()];
 
   const driverColumns = [
     { key: 'position', label: 'Pos', width: '60px', render: (r) => (
@@ -128,7 +143,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <PointsChart data={pointsChartData} drivers={drivers.slice(0, 6)} />
+      <PointsChart data={pointsChartData} drivers={chartDrivers} title={`${year} Points Progression`} />
     </div>
   );
 }

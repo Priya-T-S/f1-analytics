@@ -22,10 +22,25 @@ async function dropLegacySchema() {
   return true;
 }
 
+// Columns added after the first release; CREATE TABLE IF NOT EXISTS won't add them to existing tables.
+const ADDED_COLUMNS = [
+  ['drivers', 'wiki_url', 'TEXT'],
+];
+
+async function addMissingColumns() {
+  for (const [table, column, type] of ADDED_COLUMNS) {
+    const cols = await db.execute(`SELECT name FROM pragma_table_info('${table}')`);
+    if (!cols.rows.some((r) => r.name === column)) {
+      await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+    }
+  }
+}
+
 async function migrate() {
   await dropLegacySchema();
   const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   await db.executeMultiple(sql);
+  await addMissingColumns();
 }
 
 if (require.main === module) {

@@ -56,6 +56,7 @@ async function backfill({ dir } = {}) {
   await store.upsertDrivers([...drivers.values()].map((d) => ({
     ref: d.reference, firstName: d.forename, lastName: d.surname, nationality: d.nationality,
     dob: d.date_of_birth || null, number: int(d.permanent_car_number), code: d.abbreviation || null,
+    wikiUrl: d.wikipedia || null,
   })));
   await store.upsertConstructors([...teams.values()].map((t) => ({
     ref: t.reference, name: t.name, nationality: t.nationality, color: t.primary_color || null,
@@ -202,6 +203,11 @@ async function backfill({ dir } = {}) {
   console.log('Computing champions and lap records...');
   await store.refreshSeasons();
   await store.refreshLapRecords();
+
+  console.log('Fetching driver photos from Wikipedia...');
+  const { fillDriverImages } = require('./images');
+  console.log('  ', await fillDriverImages());
+
   await store.setState('last_sync', { at: new Date().toISOString(), source: 'jolpica-dump' });
 
   return { races: races.length, results: resultRows.length, pitStops: pitRows.length };

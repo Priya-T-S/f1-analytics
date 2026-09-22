@@ -50,7 +50,7 @@ async function enrichRace(race) {
       || entrants.find((e) => e.last_name === (d.last_name || '').toUpperCase());
     if (!match) continue;
     byNumber.set(d.driver_number, match.driver_id);
-    if (!match.image_url && d.headshot_url) {
+    if (d.headshot_url && match.image_url !== d.headshot_url) {
       statements.push({ sql: 'UPDATE drivers SET image_url = ? WHERE driver_id = ?', args: [d.headshot_url, match.driver_id] });
     }
   }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDrivers } from '../api/client';
 import Loader from '../components/common/Loader';
+import DriverPhoto from '../components/common/DriverPhoto';
 
 export default function Drivers() {
   const navigate = useNavigate();
@@ -49,11 +50,7 @@ export default function Drivers() {
           >
             <div className="driver-number">{driver.driver_number}</div>
             <div className="driver-avatar">
-              {driver.image_url ? (
-                <img src={driver.image_url} alt={`${driver.first_name} ${driver.last_name}`} className="driver-photo" />
-              ) : (
-                <div className="driver-photo-placeholder">{driver.code}</div>
-              )}
+              <DriverPhoto driver={driver} />
             </div>
             <div className="driver-name">
               {driver.first_name} {driver.last_name}

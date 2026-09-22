@@ -35,6 +35,8 @@ export const getDriverStandingsBySeason = (year) =>
 export const getConstructorStandingsBySeason = (year) =>
   api.get(`/standings/constructors/${year}`);
 export const getCurrentStandings = () => api.get('/standings/current');
+export const getPointsProgression = (year, top = 6) =>
+  api.get(`/standings/progression/${year}`, { params: { top } });
 
 export const getCareerStats = () => api.get('/stats/career');
 export const getRecords = () => api.get('/stats/records');

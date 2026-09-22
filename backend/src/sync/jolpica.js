@@ -46,6 +46,16 @@ async function getConstructorStandings(season, round) {
   return data.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings || [];
 }
 
+async function getAllDrivers() {
+  const drivers = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const data = await getJson(`/drivers.json?limit=${PAGE_SIZE}&offset=${offset}`);
+    drivers.push(...data.MRData.DriverTable.Drivers);
+    if (offset + PAGE_SIZE >= Number(data.MRData.total)) break;
+  }
+  return drivers;
+}
+
 module.exports = {
-  getSchedule, getRaceResults, getLaps, getPitStops, getDriverStandings, getConstructorStandings,
+  getAllDrivers, getSchedule, getRaceResults, getLaps, getPitStops, getDriverStandings, getConstructorStandings,
 };

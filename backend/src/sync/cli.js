@@ -2,6 +2,7 @@
 //   node src/sync/cli.js backfill [--dir <extracted dump folder>]   full history from the Jolpica dump
 //   node src/sync/cli.js sync                                      pull new races (what the cron runs)
 //   node src/sync/cli.js openf1                                    add OpenF1 data to every 2023+ race
+//   node src/sync/cli.js images                                    fill in missing driver photos
 const { migrate } = require('../db/migrate');
 const db = require('../config/db');
 
@@ -21,12 +22,16 @@ async function main() {
   } else if (command === 'sync') {
     const { runIncremental } = require('./incremental');
     console.log(await runIncremental({ maxRaces: 50, timeBudgetMs: Infinity }));
+  } else if (command === 'images') {
+    const { fillDriverImages } = require('./images');
+    console.log('Fetching driver photos from Wikipedia...');
+    console.log(await fillDriverImages());
   } else if (command === 'openf1') {
     const { enrichMissing } = require('./openf1');
     console.log('Fetching OpenF1 data (rate limited to ~28 requests/minute, so this takes a while)...');
     console.log(await enrichMissing());
   } else {
-    console.log('Usage: node src/sync/cli.js <backfill|sync|openf1>');
+    console.log('Usage: node src/sync/cli.js <backfill|sync|openf1|images>');
     process.exitCode = 1;
   }
 }
